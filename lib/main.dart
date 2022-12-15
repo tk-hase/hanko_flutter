@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 void main() {
@@ -58,7 +60,7 @@ class _HomePageState extends State<HomePage> {
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Column(
             children: [
-              _hanko(),
+              _hanko(_nameString),
               const SizedBox(height: 20.0),
               TextField(
                 maxLength: 4,
@@ -77,8 +79,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   // ハンコ表示部分のWidget
-  Widget _hanko() {
-    if (_nameString.isNotEmpty) {
+  Widget _hanko(String name) {
+    if (name.isNotEmpty) {
+      var displayNameString = name.substring(0, min(name.length, 4));
+
       return Expanded(
         child: Center(
           child: Container(
@@ -86,10 +90,10 @@ class _HomePageState extends State<HomePage> {
               shape: BoxShape.circle,
               border: Border.all(color: _hankoColor, width: _circleBorderWidth),
             ),
-            constraints: BoxConstraints.tightFor(height: (_letterSize + _decorationCircleExtraSize) * _nameString.length + _hankoPaddingTop),
+            constraints: BoxConstraints.tightFor(height: (_letterSize + _decorationCircleExtraSize) * displayNameString.length + _hankoPaddingTop),
             padding: const EdgeInsets.only(top: _hankoPaddingTop),
             alignment: Alignment.center,
-            child: _nameVertical(_nameString),
+            child: _nameVertical(displayNameString),
           ),
         ),
       );
