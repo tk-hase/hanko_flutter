@@ -54,10 +54,12 @@ class _HomePageState extends State<HomePage> {
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Column(
             children: [
-              if (_nameString.isEmpty) _promptForInputName() else _hanko(_nameString),
+              Expanded(
+                child: _nameString.isEmpty ? _promptForInputName() : _hanko(_nameString),
+              ),
               const SizedBox(height: 20.0),
               TextField(
-                maxLength: 4,
+                maxLength: 8,
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 20.0),
                 decoration: const InputDecoration(hintText: "名前を入力..."),
@@ -73,28 +75,25 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _promptForInputName() {
-    return Expanded(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Text(
-            "名前を下に入力してね！",
-            style: TextStyle(fontSize: 24),
-          ),
-          Icon(
-            Icons.keyboard_double_arrow_down,
-            size: 60,
-            color: Theme.of(context).primaryColor,
-          ),
-        ],
-      ),
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Text(
+          "名前を下に入力してね！",
+          style: TextStyle(fontSize: 24),
+        ),
+        Icon(
+          Icons.keyboard_double_arrow_down,
+          size: 60,
+          color: Theme.of(context).primaryColor,
+        ),
+      ],
     );
   }
 
   // ハンコ表示部分のWidget
   Widget _hanko(String name) {
     if (name.isNotEmpty) {
-      final displayNameString = name.substring(0, min(name.length, 4));
       // 1文字の時はぎゅっとした表示になるので、少し余白を作る
       final double decorationCirclePadding;
       if (name.length <= 1) {
@@ -103,17 +102,15 @@ class _HomePageState extends State<HomePage> {
         decorationCirclePadding = 0;
       }
 
-      return Expanded(
-        child: Center(
-          child: Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: _hankoColor, width: _circleBorderWidth),
-            ),
-            constraints: BoxConstraints.tightFor(height: (_letterSize + decorationCirclePadding) * displayNameString.length + _hankoPaddingTop * 2),
-            alignment: Alignment.center,
-            child: _nameVertical(displayNameString),
+      return Center(
+        child: Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: _hankoColor, width: _circleBorderWidth),
           ),
+          constraints: BoxConstraints.tightFor(height: (_letterSize + decorationCirclePadding) * min(4, name.length) + _hankoPaddingTop * 1.5),
+          alignment: Alignment.center,
+          child: _nameVertical(name),
         ),
       );
     } else {
@@ -125,10 +122,31 @@ class _HomePageState extends State<HomePage> {
 
   // 名前を縦書きに表示するWidget
   Widget _nameVertical(String name) {
+    final firstLineName = name.substring(0, min(name.length, 4));
+    final secondLineName = name.length <= 4 ? "" : name.substring(4);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8), // 全体的に下にずれているので調整
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          if (secondLineName.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(right: 16),
+              child: _lineNameVertical(secondLineName),
+            ),
+          _lineNameVertical(firstLineName),
+        ],
+      ),
+    );
+  }
+
+  Widget _lineNameVertical(String oneLineName) {
     return Wrap(
       direction: Axis.vertical,
       children: [
-        for (var ch in name.characters) _charactor(ch),
+        for (var ch in oneLineName.characters) _charactor(ch),
       ],
     );
   }
