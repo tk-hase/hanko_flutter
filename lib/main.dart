@@ -54,7 +54,7 @@ class _HomePageState extends State<HomePage> {
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Column(
             children: [
-              _hanko(_nameString),
+              if (_nameString.isEmpty) _promptForInputName() else _hanko(_nameString),
               const SizedBox(height: 20.0),
               TextField(
                 maxLength: 4,
@@ -68,6 +68,25 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _promptForInputName() {
+    return Expanded(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Text(
+            "名前を下に入力してね！",
+            style: TextStyle(fontSize: 24),
+          ),
+          Icon(
+            Icons.keyboard_double_arrow_down,
+            size: 60,
+            color: Theme.of(context).primaryColor,
+          ),
+        ],
       ),
     );
   }
