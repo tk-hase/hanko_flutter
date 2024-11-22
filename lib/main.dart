@@ -35,17 +35,11 @@ class _HomePageState extends State<HomePage> {
   static const double _hankoPaddingTop = _letterSize * 0.15;
   static const double _circleBorderWidth = 6.0;
 
-  double _decorationCircleExtraSize = 0.0;
   String _nameString = "";
 
   void _updateName(String name) {
     setState(() {
       _nameString = name;
-      if (name.length <= 1) {
-        _decorationCircleExtraSize = 20.0;
-      } else {
-        _decorationCircleExtraSize = 0;
-      }
     });
   }
 
@@ -66,7 +60,7 @@ class _HomePageState extends State<HomePage> {
                 maxLength: 4,
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 20.0),
-                decoration: const InputDecoration(hintText: "名字"),
+                decoration: const InputDecoration(hintText: "名前を入力..."),
                 keyboardType: TextInputType.text,
                 autofocus: true,
                 onChanged: (value) => _updateName(value),
@@ -81,7 +75,14 @@ class _HomePageState extends State<HomePage> {
   // ハンコ表示部分のWidget
   Widget _hanko(String name) {
     if (name.isNotEmpty) {
-      var displayNameString = name.substring(0, min(name.length, 4));
+      final displayNameString = name.substring(0, min(name.length, 4));
+      // 1文字の時はぎゅっとした表示になるので、少し余白を作る
+      final double decorationCirclePadding;
+      if (name.length <= 1) {
+        decorationCirclePadding = 20.0;
+      } else {
+        decorationCirclePadding = 0;
+      }
 
       return Expanded(
         child: Center(
@@ -90,8 +91,7 @@ class _HomePageState extends State<HomePage> {
               shape: BoxShape.circle,
               border: Border.all(color: _hankoColor, width: _circleBorderWidth),
             ),
-            constraints: BoxConstraints.tightFor(height: (_letterSize + _decorationCircleExtraSize) * displayNameString.length + _hankoPaddingTop),
-            padding: const EdgeInsets.only(top: _hankoPaddingTop),
+            constraints: BoxConstraints.tightFor(height: (_letterSize + decorationCirclePadding) * displayNameString.length + _hankoPaddingTop * 2),
             alignment: Alignment.center,
             child: _nameVertical(displayNameString),
           ),
@@ -109,7 +109,6 @@ class _HomePageState extends State<HomePage> {
     return Wrap(
       direction: Axis.vertical,
       children: [
-        if (name.length <= 1) SizedBox(height: _decorationCircleExtraSize),
         for (var ch in name.characters) _charactor(ch),
       ],
     );
@@ -119,7 +118,12 @@ class _HomePageState extends State<HomePage> {
   Widget _charactor(String char) {
     return Text(
       char,
-      style: const TextStyle(color: _hankoColor, fontSize: _letterSize, fontFamily: "NotoSerifJP", height: 0.92),
+      style: const TextStyle(
+        color: _hankoColor,
+        fontSize: _letterSize,
+        fontFamily: "NotoSerifJP",
+        height: 0.92,
+      ),
     );
   }
 }
