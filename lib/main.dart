@@ -31,9 +31,11 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   static const Color _hankoColor = Color(0xffed514e);
-  static const double _letterSize = 75.0;
+  static const double _letterSize = 76.0;
   static const double _hankoPaddingTop = _letterSize * 0.15;
   static const double _circleBorderWidth = 6.0;
+  static const int _maxSplitedNameLength = 4;
+  static const int _lineSpacing = 8;
 
   String _nameString = "";
 
@@ -94,12 +96,17 @@ class _HomePageState extends State<HomePage> {
   // ハンコ表示部分のWidget
   Widget _hanko(String name) {
     if (name.isNotEmpty) {
+      final splitedName = _splitName(name);
+      final nameLineLength = max(splitedName[0].length, splitedName[1].length);
+
       // 1文字の時はぎゅっとした表示になるので、少し余白を作る
       final double decorationCirclePadding;
-      if (name.length <= 1) {
+      if (name.length == 1 || nameLineLength <= 2 && splitedName[1].isNotEmpty) {
         decorationCirclePadding = 20.0;
-      } else {
+      } else if (nameLineLength <= 4 && splitedName[1].isEmpty) {
         decorationCirclePadding = 0;
+      } else {
+        decorationCirclePadding = 5.0;
       }
 
       return Center(
@@ -108,22 +115,19 @@ class _HomePageState extends State<HomePage> {
             shape: BoxShape.circle,
             border: Border.all(color: _hankoColor, width: _circleBorderWidth),
           ),
-          constraints: BoxConstraints.tightFor(height: (_letterSize + decorationCirclePadding) * min(4, name.length) + _hankoPaddingTop * 1.5),
+          constraints: BoxConstraints.tightFor(height: (_letterSize + decorationCirclePadding) * min(_maxSplitedNameLength, nameLineLength) + _hankoPaddingTop * 1.5),
           alignment: Alignment.center,
           child: _nameVertical(name),
         ),
       );
     } else {
-      return const Expanded(
-        child: SizedBox(),
-      );
+      return const Expanded(child: SizedBox());
     }
   }
 
   // 名前を縦書きに表示するWidget
   Widget _nameVertical(String name) {
-    final firstLineName = name.substring(0, min(name.length, 4));
-    final secondLineName = name.length <= 4 ? "" : name.substring(4);
+    final splitedName = _splitName(name);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 8), // 全体的に下にずれているので調整
@@ -131,12 +135,15 @@ class _HomePageState extends State<HomePage> {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          if (secondLineName.isNotEmpty)
+          if (splitedName[1].isNotEmpty)
             Padding(
-              padding: const EdgeInsets.only(right: 16),
-              child: _lineNameVertical(secondLineName),
+              padding: const EdgeInsets.only(right: _lineSpacing / 2),
+              child: _lineNameVertical(splitedName[1]),
             ),
-          _lineNameVertical(firstLineName),
+          Padding(
+            padding: EdgeInsets.only(left: splitedName[1].isEmpty ? 0 : _lineSpacing / 2),
+            child: _lineNameVertical(splitedName[0]),
+          ),
         ],
       ),
     );
@@ -162,5 +169,20 @@ class _HomePageState extends State<HomePage> {
         height: 0.92,
       ),
     );
+  }
+
+  List<String> _splitName(String name) {
+    final String firstName;
+    final String secondName;
+    if (name.contains(" ") || name.contains("　")) {
+      final splitedName = name.contains(" ") ? name.split(" ") : name.split("　");
+      firstName = splitedName[0];
+      secondName = splitedName[1];
+    } else {
+      firstName = name.substring(0, min(name.length, _maxSplitedNameLength));
+      secondName = name.length <= _maxSplitedNameLength ? "" : name.substring(_maxSplitedNameLength);
+    }
+
+    return [firstName, secondName];
   }
 }
